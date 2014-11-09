@@ -25,8 +25,8 @@ public class SimpleGradientTest implements Runnable {
 	
 	public static void main(String[] args) throws Exception {
 		SimpleGradientTest test = new SimpleGradientTest();
-//		test.configFile = new File((String) args[0]);
-		test.configFile = new File("/Core/home/kkoning/research/ace/broadband/Simple/net.kkoning.ace.broadband-evolve.properties");
+		test.configFile = new File((String) args[0]);
+//		test.configFile = new File("net.kkoning.ace.broadband-evolve.properties");
 		test.run();
 	}
 	
@@ -55,7 +55,7 @@ public class SimpleGradientTest implements Runnable {
 			headers[3] = "B_Price";
 			headers[4] = "B_Capacity";
 			headers[5] = "B_Fitness";
-			out = new DataOutputFile("/Users/kkoning/smart_gradient.tsv", headers);
+			out = new DataOutputFile("smart_gradient.tsv", headers);
 			
 			runner = evoState.getRunner();
 			
