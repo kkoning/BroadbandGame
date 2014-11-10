@@ -16,7 +16,7 @@ import ec.util.Output;
 import ec.util.Parameter;
 import ec.util.ParameterDatabase;
 
-public class SimpleGradientTest implements Runnable {
+public class SmartGradientTest implements Runnable {
 	
 	AgencyEvolutionState evoState;
 	File configFile;
@@ -24,7 +24,7 @@ public class SimpleGradientTest implements Runnable {
 	AgencyRunner runner;
 	
 	public static void main(String[] args) throws Exception {
-		SimpleGradientTest test = new SimpleGradientTest();
+		SmartGradientTest test = new SmartGradientTest();
 		test.configFile = new File((String) args[0]);
 //		test.configFile = new File("net.kkoning.ace.broadband-evolve.properties");
 		test.run();
@@ -55,7 +55,7 @@ public class SimpleGradientTest implements Runnable {
 			headers[3] = "B_Price";
 			headers[4] = "B_Capacity";
 			headers[5] = "B_Fitness";
-			out = new DataOutputFile("simple_gradient.tsv", headers);
+			out = new DataOutputFile("smart_gradient.tsv", headers);
 			
 			runner = evoState.getRunner();
 			
@@ -97,14 +97,14 @@ public class SimpleGradientTest implements Runnable {
 		genome[0] = price;
 		genome[1] = capacity;
 
-		FloatVectorNSPIndividual ind = new FloatVectorNSPIndividual();
+		FloatVectorNSPIndividual ind = new SmartFloatVectorNSPIndividual();
 		ind.genome = genome;
 		return ind;
 	}
 	
 	class ModelHelper implements Runnable {
 
-		SimpleGradientTest test;
+		SmartGradientTest test;
 		BroadbandModel model;
 		
 		@Override
