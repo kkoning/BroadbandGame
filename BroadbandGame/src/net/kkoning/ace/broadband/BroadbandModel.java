@@ -55,40 +55,6 @@ public class BroadbandModel implements AgencyModel {
 	int step;
 	int steps;
 
-	void initalizeConsumers() {
-		consumerWTP = new float[numConsumerAgents];
-		consumerSurplus = new double[numConsumerAgents];
-		consumerProviders = new byte[numConsumerAgents];
-		for (int i = 0; i < numConsumerAgents; i++) {
-			consumerWTP[i] = maxConsumerWTP - (i * perConsumerWTPReduction);
-			consumerProviders[i] = -1; // start with no NSP
-		}
-	}
-
-	public void perStepStats() {
-		float highPrice = Float.MIN_VALUE, lowPrice = Float.MAX_VALUE;
-		float highQty = Float.MIN_VALUE, lowQty = Float.MAX_VALUE;
-
-		for (NSPAgent nsp : nsps) {
-			averagePriceOffer.increment(nsp.price);
-			averageQuantity.increment(nsp.networkCapacity);
-
-			if (nsp.price > highPrice)
-				highPrice = nsp.price;
-			if (nsp.price < lowPrice)
-				lowPrice = nsp.price;
-
-			if (nsp.networkCapacity > highQty)
-				highQty = nsp.networkCapacity;
-			if (nsp.networkCapacity < lowQty)
-				lowQty = nsp.networkCapacity;
-		}
-
-		averagePriceRange.increment(highPrice - lowPrice);
-		averageQuantityRange.increment(highQty - lowQty);
-
-	}
-
 	@Override
 	public void setup(EvolutionState state, Parameter base) {
 		this.evoState = (AgencyEvolutionState) state;
@@ -118,6 +84,44 @@ public class BroadbandModel implements AgencyModel {
 
 	}
 
+	void initalizeConsumers() {
+		consumerWTP = new float[numConsumerAgents];
+		consumerSurplus = new double[numConsumerAgents];
+		consumerProviders = new byte[numConsumerAgents];
+		for (int i = 0; i < numConsumerAgents; i++) {
+			consumerWTP[i] = maxConsumerWTP - (i * perConsumerWTPReduction);
+			consumerProviders[i] = -1; // start with no NSP
+		}
+	}
+
+	void checkReadyToStart() {
+		if (modelID == null)
+			throw new IllegalStateException("Model ID not set");
+		if (generation == null)
+			throw new IllegalStateException("Generation not set");
+		if (randomSeed == null)
+			throw new IllegalStateException("Random seed not initialized");
+		if (random == null)
+			throw new IllegalStateException("Randomizer not initialized");
+		if (evalGroup == null)
+			throw new IllegalStateException("No Evaluation Group to Evaluate");
+		if (evalGroup.individuals == null)
+			throw new IllegalStateException(
+					"Evaluation group contains no individuals");
+		if (evalGroup.individuals.isEmpty())
+			throw new IllegalStateException(
+					"Evaluation group contains no individuals");
+		if (nsps == null)
+			throw new IllegalStateException("NSPs not properly initialized");
+		if (consumerWTP == null)
+			throw new IllegalStateException(
+					"Consumers not properly initialized");
+		if (consumerProviders == null)
+			throw new IllegalStateException(
+					"Consumers not properly initialized");
+
+	}
+
 	@Override
 	public void run() {
 		initalizeConsumers();
@@ -125,7 +129,6 @@ public class BroadbandModel implements AgencyModel {
 
 		for (step = 0; step < steps; step++) {
 			step();
-			perStepStats();
 		}
 
 		Object[] data = new Object[6];
@@ -157,7 +160,33 @@ public class BroadbandModel implements AgencyModel {
 		for (NSPAgent nsp : nsps)
 			nsp.bill();
 
+		perStepStats();
+
 		step++;
+	}
+
+	public void perStepStats() {
+		float highPrice = Float.MIN_VALUE, lowPrice = Float.MAX_VALUE;
+		float highQty = Float.MIN_VALUE, lowQty = Float.MAX_VALUE;
+
+		for (NSPAgent nsp : nsps) {
+			averagePriceOffer.increment(nsp.price);
+			averageQuantity.increment(nsp.networkCapacity);
+
+			if (nsp.price > highPrice)
+				highPrice = nsp.price;
+			if (nsp.price < lowPrice)
+				lowPrice = nsp.price;
+
+			if (nsp.networkCapacity > highQty)
+				highQty = nsp.networkCapacity;
+			if (nsp.networkCapacity < lowQty)
+				lowQty = nsp.networkCapacity;
+		}
+
+		averagePriceRange.increment(highPrice - lowPrice);
+		averageQuantityRange.increment(highQty - lowQty);
+
 	}
 
 	void consumerDecisions_Noisy() {
@@ -180,7 +209,7 @@ public class BroadbandModel implements AgencyModel {
 				u[nsp_i] = u[nsp_i] + error;
 
 				// If this NSP is better, clear the list of best NSPs and start
-				// over with this one.  On the other hand, if this one is exactly
+				// over with this one. On the other hand, if this one is exactly
 				// the same, just add it to the list of equally "best" NSPs.
 				if (u[nsp_i] > nsp_max_u) {
 					bestNSPs.clear();
@@ -208,7 +237,7 @@ public class BroadbandModel implements AgencyModel {
 			if (consumerProviders[consumer_i] >= 0) {
 				nsps[consumerProviders[consumer_i]].numCustomers++; // count
 			}
-			
+
 		} // end each consumer
 
 		for (int consumer_i = 0; consumer_i < numConsumerAgents; consumer_i++) {
@@ -326,6 +355,26 @@ public class BroadbandModel implements AgencyModel {
 		return 1 / (1 + (Math.exp(((s_alpha) - priceDiffPercent) / s_beta)));
 	}
 
+	public float getLowPrice() {
+		float minPrice = Float.MAX_VALUE;
+		for (NSPAgent nsp : nsps) {
+			if (nsp.price < minPrice)
+				minPrice = nsp.price;
+		}
+		return minPrice;
+	}
+
+	public NSPAgent getOtherNSP(NSPAgent whosAsking) {
+		if (nsps.length != 2)
+			throw new RuntimeException(
+					"Getting the other NSP is only possible when there are exactly two NSPs in the simulation");
+		
+		if (whosAsking == nsps[0])
+			return nsps[1];
+		else
+			return nsps[0];
+	}
+
 	@Override
 	public Map<Individual, Fitness> getFitnesses() {
 		Map<Individual, Fitness> fitness = new IdentityHashMap<Individual, Fitness>();
@@ -339,43 +388,6 @@ public class BroadbandModel implements AgencyModel {
 		// System.out.print("F");
 
 		return fitness;
-	}
-
-	public float getLowPrice() {
-		float minPrice = Float.MAX_VALUE;
-		for (NSPAgent nsp : nsps) {
-			if (nsp.price < minPrice)
-				minPrice = nsp.price;
-		}
-		return minPrice;
-	}
-
-	void checkReadyToStart() {
-		if (modelID == null)
-			throw new IllegalStateException("Model ID not set");
-		if (generation == null)
-			throw new IllegalStateException("Generation not set");
-		if (randomSeed == null)
-			throw new IllegalStateException("Random seed not initialized");
-		if (random == null)
-			throw new IllegalStateException("Randomizer not initialized");
-		if (evalGroup == null)
-			throw new IllegalStateException("No Evaluation Group to Evaluate");
-		if (evalGroup.individuals == null)
-			throw new IllegalStateException(
-					"Evaluation group contains no individuals");
-		if (evalGroup.individuals.isEmpty())
-			throw new IllegalStateException(
-					"Evaluation group contains no individuals");
-		if (nsps == null)
-			throw new IllegalStateException("NSPs not properly initialized");
-		if (consumerWTP == null)
-			throw new IllegalStateException(
-					"Consumers not properly initialized");
-		if (consumerProviders == null)
-			throw new IllegalStateException(
-					"Consumers not properly initialized");
-
 	}
 
 	@Override
