@@ -127,7 +127,7 @@ public class BroadbandModel implements AgencyModel {
 		initalizeConsumers();
 		checkReadyToStart();
 
-		for (step = 0; step < steps; step++) {
+		for (int i = 0; i < steps; i++) {
 			step();
 		}
 

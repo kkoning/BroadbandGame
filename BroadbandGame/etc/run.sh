@@ -1,6 +1,7 @@
 #!/bin/bash
 
 CLASSPATH=/Core/home/kkoning/Dropbox/git/BroadbandGame/BroadbandGame/bin/:/Core/home/kkoning/Dropbox/git/Agency/Agency/bin:/Core/home/kkoning/Dropbox/git/Agency/Agency/lib/ecj-21.jar:/Core/home/kkoning/Dropbox/git/Agency/Agency/lib/mason.16.jar:/Core/home/kkoning/Dropbox/git/Agency/Agency/lib/commons-cli-1.2.jar:/Core/home/kkoning/Dropbox/git/Agency/Agency/lib/commons-math3-3.1.jar 
+export CLASSPATH
 
 DIR=`pwd`
 
