@@ -369,7 +369,7 @@ public class BroadbandModel implements AgencyModel {
 		if (nsps.length != 2)
 			throw new RuntimeException(
 					"Getting the other NSP is only possible when there are exactly two NSPs in the simulation");
-		
+
 		if (whosAsking == nsps[0])
 			return nsps[1];
 		else
@@ -412,6 +412,14 @@ public class BroadbandModel implements AgencyModel {
 			nsps[i] = new NSPAgent(this, (NSPIndividual) ind);
 		}
 
+	}
+
+	public int totalCapacity() {
+		int totalCapacity = 0;
+		for (NSPAgent nsp : nsps) {
+			totalCapacity += nsp.networkCapacity;
+		}
+		return totalCapacity;
 	}
 
 	@Override
