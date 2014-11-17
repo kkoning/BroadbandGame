@@ -108,8 +108,7 @@ public class BertrandTest implements Runnable {
 			model.setEvaluationGroup(eg);
 			
 			
-			for (model.step = 0; model.step < model.steps; model.step++) {
-				model.step();
+			while (model.step < model.steps) {
 				Object[] toWrite = new Object[10];
 				toWrite[0] = model.getSimulationID();
 				toWrite[1] = model.step;
@@ -121,8 +120,8 @@ public class BertrandTest implements Runnable {
 				toWrite[7] = model.nsps[1].networkCapacity;
 				toWrite[8] = model.nsps[1].numCustomers;
 				toWrite[9] = model.nsps[1].money;
-				
 				out.writeTuple(toWrite);
+				model.step();
 			}
 
 			

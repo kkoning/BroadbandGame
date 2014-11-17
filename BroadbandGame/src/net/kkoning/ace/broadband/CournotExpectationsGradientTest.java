@@ -16,7 +16,7 @@ import ec.util.Output;
 import ec.util.Parameter;
 import ec.util.ParameterDatabase;
 
-public class SimpleGradientTest implements Runnable {
+public class CournotExpectationsGradientTest implements Runnable {
 	
 	AgencyEvolutionState evoState;
 	File configFile;
@@ -24,7 +24,7 @@ public class SimpleGradientTest implements Runnable {
 	AgencyRunner runner;
 	
 	public static void main(String[] args) throws Exception {
-		SimpleGradientTest test = new SimpleGradientTest();
+		CournotExpectationsGradientTest test = new CournotExpectationsGradientTest();
 		test.configFile = new File((String) args[0]);
 //		test.configFile = new File("net.kkoning.ace.broadband-evolve.properties");
 		test.run();
@@ -48,14 +48,12 @@ public class SimpleGradientTest implements Runnable {
 			BroadbandModel model = getBroadbandModel();
 			System.out.println("Model Creation successful " + model);
 			
-			String[] headers = new String[6];
-			headers[0] = "A_Price";
-			headers[1] = "A_Capacity";
-			headers[2] = "A_Fitness";
-			headers[3] = "B_Price";
-			headers[4] = "B_Capacity";
-			headers[5] = "B_Fitness";
-			out = new DataOutputFile("simple_gradient.tsv", headers);
+			String[] headers = new String[4];
+			headers[0] = "A_Capacity";
+			headers[1] = "A_Fitness";
+			headers[2] = "B_Capacity";
+			headers[3] = "B_Fitness";
+			out = new DataOutputFile("cournot_gradient.tsv", headers);
 			
 			runner = evoState.getRunner();
 			
@@ -97,36 +95,32 @@ public class SimpleGradientTest implements Runnable {
 		
 	}
 	
-	FloatVectorNSPIndividual getRandomInd() {
-		float priceMin = 15;
-		float priceRange = 0;
-
-		float capacityMin = 42;
-		float capacityRange = 2;
+	CournotExpectationsNSPIndividual getRandomInd() {
+		float capacityMin = 0;
+		float capacityRange = 50;
 		
 		float capacity = evoState.random[0].nextFloat() * capacityRange + capacityMin;
-		float price = evoState.random[0].nextFloat() * priceRange + priceMin;
 		
-		float[] genome = new float[2];
-		genome[0] = price;
-		genome[1] = capacity;
+		float[] genome = new float[1];
+		genome[0] = capacity;
 
-		FloatVectorNSPIndividual ind = new FloatVectorNSPIndividual();
+		CournotExpectationsNSPIndividual ind = new CournotExpectationsNSPIndividual();
 		ind.genome = genome;
 		return ind;
 	}
 	
 	class ModelHelper implements Runnable {
 
-		SimpleGradientTest test;
+		CournotExpectationsGradientTest test;
 		BroadbandModel model;
 		
 		@Override
 		public void run() {
 			EvaluationGroup eg = new EvaluationGroup();
 			eg.individuals = new ArrayList<Individual>();
-			FloatVectorNSPIndividual a = test.getRandomInd();
-			FloatVectorNSPIndividual b = test.getFixedInd(15f, 43f);
+			CournotExpectationsNSPIndividual a = test.getRandomInd();
+			CournotExpectationsNSPIndividual b = test.getRandomInd();
+//			CournotExpectationsNSPIndividual b = test.getFixedInd(15f, 43f);
 			
 			eg.individuals.add(a);
 			eg.individuals.add(b);
@@ -139,12 +133,10 @@ public class SimpleGradientTest implements Runnable {
 			Map<Individual,Fitness> fit = model.getFitnesses();
 			
 			ArrayList<Object> toWrite = new ArrayList<Object>();
-			toWrite.add(a.genome[0]); // price
-			toWrite.add(a.genome[1]); // capacity
+			toWrite.add(a.genome[0]); // capacity
 			SimpleFitness sf = (SimpleFitness) fit.get(a);
 			toWrite.add(sf.fitness());
-			toWrite.add(b.genome[0]); // price
-			toWrite.add(b.genome[1]); // capacity
+			toWrite.add(b.genome[0]); // capacity
 			sf = (SimpleFitness) fit.get(b);
 			toWrite.add(sf.fitness());
 			
