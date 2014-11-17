@@ -10,7 +10,7 @@ public class FloatVectorNSPIndividual extends ec.vector.FloatVectorIndividual im
 
 	@Override
 	public int setCapacity(BroadbandModel m, NSPAgent a) {
-		return (int) genome[1] * 10;
+		return (int) (genome[1] * 10);
 	}
 
 }
