@@ -38,6 +38,7 @@ public class BroadbandModel implements AgencyModel {
 	Float s_beta;
 	double congest_penalty_exp = 1;
 	Float utilityErrorRatio;
+	Float indifferenceRatio;
 
 	NSPAgent[] nsps;
 
@@ -198,7 +199,7 @@ public class BroadbandModel implements AgencyModel {
 		for (int consumer_i = 0; consumer_i < numConsumerAgents; consumer_i++) {
 			float u[] = new float[nsps.length];
 			byte nsp_max_u_i = -1;
-			float nsp_max_u = -1f;
+			float nsp_max_u = 0f;
 
 			// Determine utilities for each NSP and which is best.
 			List<Byte> bestNSPs = new ArrayList<Byte>();
@@ -206,7 +207,7 @@ public class BroadbandModel implements AgencyModel {
 				u[nsp_i] = consumerSurplus(nsp_i, consumer_i);
 				float error = random.nextFloat() * utilityErrorRatio;
 				error = error - (utilityErrorRatio / 2);
-				u[nsp_i] = u[nsp_i] + error;
+				u[nsp_i] = u[nsp_i] + u[nsp_i] * error;
 
 				// If this NSP is better, clear the list of best NSPs and start
 				// over with this one. On the other hand, if this one is exactly
